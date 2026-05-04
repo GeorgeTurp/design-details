@@ -1,10 +1,9 @@
 ---
 name: design-details-react-native
 description: |
-  This skill should be used when implementing micro-interactions, press feedback, haptics,
-  gesture choreography, or motion in React Native. Triggers when the user is working with
-  Reanimated, react-native-gesture-handler, expo-haptics, or building interactive React Native
-  components that need to feel alive.
+  React Native motion, haptics, and gestures using Reanimated 3 + Gesture Handler + Expo Haptics.
+  Triggers when building interactive React Native components with press feedback, swipe actions,
+  drag, or haptic patterns.
 version: 0.1.0
 ---
 

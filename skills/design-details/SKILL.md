@@ -1,10 +1,9 @@
 ---
 name: design-details
 description: |
-  This skill should be used when the user asks to "make it feel alive", "add micro-interactions",
-  "add press feedback", "make this feel responsive", "add haptics", "choreograph gestures",
-  "add motion", "make it feel native", mentions emotional motion, interaction polish,
-  or wants UI that feels tactile and responsive rather than static.
+  Make UI feel alive: press feedback, haptics, gestures, emotional motion.
+  Triggers on "add micro-interactions", "make it feel responsive", "add haptics",
+  "choreograph gestures", "make it feel native", or when building interactive components.
 version: 0.1.0
 ---
 
