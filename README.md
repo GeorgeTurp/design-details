@@ -28,23 +28,33 @@ Works with React Native (Reanimated 3 + Gesture Handler), SwiftUI, and web (CSS,
 
 ## Install
 
-For all your projects:
+The quickest way:
+
+```bash
+npx skills add GeorgeTurp/design-details
+```
+
+This installs all four skills (parent + React Native, SwiftUI, web) into your Claude Code skills directory. The CLI will ask which agent to target if you have multiple installed.
+
+You can also install a single sub-skill if you only work on one platform:
+
+```bash
+npx skills add GeorgeTurp/design-details --skill design-details-react-native
+```
+
+### Manual install
+
+If you prefer git clone, you can install globally (all projects):
 
 ```bash
 git clone https://github.com/GeorgeTurp/design-details.git ~/.claude/skills/design-details
 ```
 
-For a single project:
+Or into a single project:
 
 ```bash
 # From your project root
 git clone https://github.com/GeorgeTurp/design-details.git .claude/skills/design-details
-```
-
-Or as a submodule if you want it versioned with your repo:
-
-```bash
-git submodule add https://github.com/GeorgeTurp/design-details.git .claude/skills/design-details
 ```
 
 Restart Claude Code after installing. No config needed.
