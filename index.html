@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>design-details — Make UI feel alive</title>
+  <meta name="description" content="A Claude Code skill that adds press feedback, haptics, gestures, and emotional motion to every component automatically.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #000000;
+      --text: #ffffff;
+      --text-muted: #666666;
+      --text-dim: #444444;
+      --border: #1a1a1a;
+      --border-hover: #333333;
+      --surface: #0a0a0a;
+      --accent: #00ff88;
+      --accent-dim: #00cc6a;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+      --ease-out: cubic-bezier(0, 0, 0.2, 1);
+      --ease-in: cubic-bezier(0.4, 0, 1, 1);
+      --snap: cubic-bezier(0.2, 0, 0, 1);
+      --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    body.reduce-motion *,
+    body.reduce-motion *::before,
+    body.reduce-motion *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ---- NAV ---- */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 56px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: color 150ms, background 150ms;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-github {
+      display: flex;
+      align-items: center;
+      color: var(--text-muted);
+      transition: color 150ms;
+    }
+
+    .nav-github:hover {
+      color: var(--text);
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 80px 24px 64px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 60px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 span {
+      color: var(--text-muted);
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      max-width: 480px;
+      margin-bottom: 48px;
+    }
+
+    /* before/after demo */
+    .hero-demo {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      margin-bottom: 48px;
+    }
+
+    .hero-demo-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+
+    .hero-demo-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .demo-btn {
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      font-family: var(--font);
+      border: none;
+      cursor: pointer;
+    }
+
+    .demo-btn-dead {
+      background: #222;
+      color: #888;
+      cursor: default;
+    }
+
+    .demo-btn-alive {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 2px 8px rgba(0, 255, 136, 0.2);
+      transition: transform 80ms ease-out, opacity 80ms ease-out, box-shadow 80ms ease-out;
+    }
+
+    .demo-btn-alive:not(:active) {
+      transition-duration: 180ms;
+      transition-timing-function: var(--bounce);
+    }
+
+    .demo-btn-alive:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+      box-shadow: none;
+    }
+
+    .hero-arrow {
+      color: var(--text-dim);
+      font-size: 20px;
+      margin-top: 20px;
+    }
+
+    /* install block */
+    .install-block {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px 4px 4px 20px;
+      margin-bottom: 16px;
+      max-width: 100%;
+    }
+
+    .install-cmd {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      user-select: all;
+    }
+
+    .install-cmd b {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .install-copy {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      transition: color 150ms, background 150ms;
+    }
+
+    .install-copy:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .hero-platforms {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    /* ---- GRID ---- */
+    .grid-section {
+      padding: 0 24px 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .grid-header {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+      padding-left: 4px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card {
+      background: var(--bg);
+      aspect-ratio: 4 / 3;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 24px;
+      position: relative;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: auto;
+      letter-spacing: -0.01em;
+    }
+
+    .card-demo {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0;
+    }
+
+    .card-value {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: auto;
+    }
+
+    /* ---- CARD 1: Button press ---- */
+    .press-btn {
+      padding: 10px 24px;
+      background: #fff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(255, 255, 255, 0.08);
+      transition: transform 80ms ease-out, opacity 80ms ease-out, box-shadow 80ms ease-out;
+    }
+
+    .press-btn:not(:active) {
+      transition-duration: 180ms;
+      transition-timing-function: var(--snap);
+    }
+
+    .press-btn:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+      box-shadow: none;
+    }
+
+    /* ---- CARD 2: Card press ---- */
+    .press-card {
+      width: 140px;
+      height: 80px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transition: transform 100ms ease-out, box-shadow 100ms ease-out;
+    }
+
+    .press-card:not(:active) {
+      transition: transform 250ms var(--bounce), box-shadow 250ms ease-out;
+    }
+
+    .press-card:active {
+      transform: scale(0.98) translateY(1px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    .press-card-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 60%;
+    }
+
+    .press-card-line {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border-hover);
+    }
+
+    .press-card-line:nth-child(2) { width: 75%; }
+    .press-card-line:nth-child(3) { width: 50%; }
+
+    /* ---- CARD 3: Toggle ---- */
+    .toggle-input {
+      display: none;
+    }
+
+    .toggle-track {
+      width: 52px;
+      height: 32px;
+      background: #333;
+      border-radius: 16px;
+      cursor: pointer;
+      position: relative;
+      transition: background 200ms;
+    }
+
+    .toggle-input:checked + .toggle-track {
+      background: var(--accent-dim);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 26px;
+      height: 26px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 250ms var(--bounce), width 150ms 50ms;
+      pointer-events: none;
+    }
+
+    .toggle-input:checked + .toggle-track .toggle-thumb {
+      transform: translateX(20px);
+    }
+
+    .toggle-track:active .toggle-thumb {
+      width: 30px;
+      border-radius: 13px;
+    }
+
+    /* ---- CARD 4: Icon buttons ---- */
+    .icon-btn-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 18px;
+      transition: transform 50ms ease-out, opacity 50ms ease-out;
+    }
+
+    .icon-btn:not(:active) {
+      transition-duration: 150ms;
+      transition-timing-function: ease-out;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.85);
+      opacity: 0.6;
+    }
+
+    .icon-btn:hover {
+      color: var(--text);
+    }
+
+    /* ---- CARD 5: Easing comparison ---- */
+    .easing-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .easing-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .easing-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      width: 70px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .easing-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .easing-dot {
+      position: absolute;
+      top: -4px;
+      left: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .easing-dot.efficient {
+      animation: easingSlide 2s var(--snap) infinite alternate;
+    }
+
+    .easing-dot.informative {
+      animation: easingSlide 2s var(--smooth) infinite alternate;
+      animation-delay: 0.1s;
+    }
+
+    .easing-dot.emphatic {
+      animation: easingSlide 2s ease-in-out infinite alternate;
+      animation-delay: 0.2s;
+    }
+
+    .easing-dot.playful {
+      animation: easingSlide 2s var(--bounce) infinite alternate;
+      animation-delay: 0.3s;
+    }
+
+    @keyframes easingSlide {
+      from { left: 0; }
+      to { left: calc(100% - 12px); }
+    }
+
+    /* ---- CARD 6: Hover + press ---- */
+    .hover-btn {
+      padding: 10px 24px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: transform 150ms ease-out, box-shadow 150ms ease-out, border-color 150ms;
+    }
+
+    @media (hover: hover) {
+      .hover-btn:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.06);
+        border-color: var(--border-hover);
+      }
+    }
+
+    .hover-btn:active {
+      transform: scale(0.97);
+      box-shadow: none;
+      transition-duration: 80ms;
+    }
+
+    .hover-touch-note {
+      display: none;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 8px;
+    }
+
+    @media (hover: none) {
+      .hover-touch-note { display: block; }
+    }
+
+    /* ---- CARD 7: Swipe to delete ---- */
+    .swipe-container {
+      width: 100%;
+      max-width: 220px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .swipe-action {
+      position: absolute;
+      inset: 0;
+      background: #cc3333;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 16px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 8px;
+    }
+
+    .swipe-item {
+      position: relative;
+      background: #1a1a1a;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 8px;
+      z-index: 1;
+    }
+
+    .swipe-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #333;
+      flex-shrink: 0;
+    }
+
+    .swipe-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .swipe-line {
+      height: 3px;
+      background: #333;
+      border-radius: 2px;
+    }
+
+    .swipe-line:nth-child(2) { width: 60%; }
+
+    /* ---- CARD 8: Long press ---- */
+    .longpress-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 500ms ease-out, border-color 500ms ease-out, background 500ms ease-out;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .longpress-circle.pressing {
+      transform: scale(0.92);
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.05);
+      transition: transform 500ms ease-out, border-color 300ms, background 300ms;
+    }
+
+    .longpress-circle.committed {
+      transform: scale(1.05);
+      border-color: var(--accent);
+      background: rgba(0, 255, 136, 0.1);
+      transition: transform 200ms var(--bounce);
+    }
+
+    .longpress-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-top-color: var(--accent);
+      opacity: 0;
+      transition: opacity 200ms;
+    }
+
+    .longpress-circle.pressing .longpress-ring {
+      opacity: 1;
+      animation: longpressSpin 500ms linear forwards;
+    }
+
+    @keyframes longpressSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .longpress-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1a1a1a;
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      min-width: 100px;
+    }
+
+    .longpress-menu.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .longpress-menu-item {
+      font-size: 11px;
+      padding: 6px 12px;
+      color: var(--text-muted);
+      border-radius: 4px;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity 150ms ease-out, transform 150ms ease-out, background 100ms, color 100ms;
+    }
+
+    .longpress-menu.show .longpress-menu-item {
+      opacity: 1;
+      transform: none;
+    }
+
+    .longpress-menu.show .longpress-menu-item:nth-child(1) { transition-delay: 0ms; }
+    .longpress-menu.show .longpress-menu-item:nth-child(2) { transition-delay: 30ms; }
+    .longpress-menu.show .longpress-menu-item:nth-child(3) { transition-delay: 60ms; }
+
+    .longpress-menu-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+    }
+
+    /* ---- CARD 9: Enter/exit asymmetry ---- */
+    .asymmetry-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .asymmetry-toast {
+      background: #1a1a1a;
+      border: 1px solid var(--border-hover);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .asymmetry-toast.entering {
+      opacity: 1;
+      transform: none;
+      transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+    }
+
+    .asymmetry-toast.exiting {
+      opacity: 0;
+      transform: none;
+      transition: opacity 150ms var(--ease-in);
+    }
+
+    .asymmetry-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .asymmetry-toggle {
+      font-size: 11px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: color 150ms, border-color 150ms;
+    }
+
+    .asymmetry-toggle:hover {
+      color: var(--text-muted);
+      border-color: var(--border-hover);
+    }
+
+    /* ---- CARD 10: Stagger ---- */
+    .stagger-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      width: 100%;
+      max-width: 180px;
+    }
+
+    .stagger-item {
+      height: 28px;
+      background: #1a1a1a;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+    }
+
+    .stagger-item.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .stagger-item-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333;
+    }
+
+    .stagger-item-bar {
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      flex: 1;
+    }
+
+    .stagger-item:nth-child(2) .stagger-item-bar { width: 70%; flex: none; }
+    .stagger-item:nth-child(4) .stagger-item-bar { width: 55%; flex: none; }
+
+    .stagger-replay {
+      font-size: 11px;
+      color: var(--text-dim);
+      background: none;
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: var(--font);
+      margin-top: 8px;
+      align-self: center;
+      transition: color 150ms, border-color 150ms;
+    }
+
+    .stagger-replay:hover {
+      color: var(--text-muted);
+      border-color: var(--border-hover);
+    }
+
+    /* ---- CARD 11: Spring comparison ---- */
+    .spring-demo {
+      display: flex;
+      gap: 24px;
+      align-items: flex-end;
+    }
+
+    .spring-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spring-ball {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .spring-ball.snappy {
+      animation: springBounce 2s var(--snap) infinite;
+    }
+
+    .spring-ball.bouncy {
+      animation: springBounce 2s var(--bounce) infinite;
+    }
+
+    .spring-ball.smooth {
+      animation: springBounce 2s var(--smooth) infinite;
+    }
+
+    @keyframes springBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-32px); }
+    }
+
+    .spring-label {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    /* ---- CARD 12: Reduce motion ---- */
+    .reduce-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .reduce-preview {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .reduce-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 800ms linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .reduce-bar {
+      width: 40px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 3px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* ---- WHY SECTION ---- */
+    .why {
+      max-width: 640px;
+      margin: 80px auto;
+      padding: 0 24px;
+    }
+
+    .why h2 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .why p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .why p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .footer-credit {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .footer-credit a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .footer-credit a:hover {
+      color: var(--text);
+    }
+
+    .footer-link {
+      color: var(--text-dim);
+      transition: color 150ms;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 640px) {
+      .hero { padding: 48px 20px 40px; }
+      .hero-demo { gap: 20px; }
+      .install-block { padding: 4px 4px 4px 14px; }
+      .install-cmd { font-size: 12px; }
+      .grid-section { padding: 0 16px 16px; }
+      .grid { grid-template-columns: 1fr; }
+      .card { aspect-ratio: auto; min-height: 200px; }
+    }
+
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (min-width: 1024px) and (max-width: 1399px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (min-width: 1400px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">design-details</a>
+    <div class="nav-links">
+      <a href="https://github.com/GeorgeTurp/design-details" class="nav-link" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/GeorgeTurp/design-details" class="nav-github" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <h1>Your UI is static.<br><span>This skill fixes that.</span></h1>
+    <p class="hero-sub">A Claude Code skill that adds press feedback, haptics, gesture choreography, and emotional motion to every component. Automatically.</p>
+
+    <div class="hero-demo">
+      <div class="hero-demo-col">
+        <div class="hero-demo-label">Before</div>
+        <button class="demo-btn demo-btn-dead">Save changes</button>
+      </div>
+      <div class="hero-arrow">→</div>
+      <div class="hero-demo-col">
+        <div class="hero-demo-label">After</div>
+        <button class="demo-btn demo-btn-alive">Save changes</button>
+      </div>
+    </div>
+
+    <div class="install-block">
+      <div class="install-cmd">npx skills add <b>GeorgeTurp/design-details</b></div>
+      <button class="install-copy" id="copyBtn" aria-label="Copy install command">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      </button>
+    </div>
+
+    <p class="hero-platforms">Works with React Native, SwiftUI, and Web. Zero config.</p>
+  </section>
+
+  <!-- GRID -->
+  <section class="grid-section">
+    <div class="grid-header">What it teaches Claude</div>
+    <div class="grid">
+
+      <!-- 1: Button press -->
+      <div class="card" style="--i:0">
+        <div class="card-title">Button press feedback</div>
+        <div class="card-demo">
+          <button class="press-btn">Save changes</button>
+        </div>
+        <div class="card-value">scale: 0.96 · 80ms press · 180ms release</div>
+      </div>
+
+      <!-- 2: Card press -->
+      <div class="card" style="--i:1">
+        <div class="card-title">Card press</div>
+        <div class="card-demo">
+          <div class="press-card">
+            <div class="press-card-lines">
+              <div class="press-card-line"></div>
+              <div class="press-card-line"></div>
+              <div class="press-card-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-value">scale: 0.98 · 250ms spring release</div>
+      </div>
+
+      <!-- 3: Toggle -->
+      <div class="card" style="--i:2">
+        <div class="card-title">Toggle with spring</div>
+        <div class="card-demo">
+          <input type="checkbox" id="toggle1" class="toggle-input">
+          <label for="toggle1" class="toggle-track">
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+        <div class="card-value">250ms bounce · thumb stretch 1.15x</div>
+      </div>
+
+      <!-- 4: Icon buttons -->
+      <div class="card" style="--i:3">
+        <div class="card-title">Icon button press</div>
+        <div class="card-demo">
+          <div class="icon-btn-row">
+            <button class="icon-btn" aria-label="Like">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Bookmark">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="Share">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </button>
+            <button class="icon-btn" aria-label="More">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-value">scale: 0.85 · 50ms in · 150ms out</div>
+      </div>
+
+      <!-- 5: Easing comparison -->
+      <div class="card" style="--i:4">
+        <div class="card-title">Emotional motion registers</div>
+        <div class="card-demo">
+          <div class="easing-demo">
+            <div class="easing-row">
+              <div class="easing-label">Efficient</div>
+              <div class="easing-track"><div class="easing-dot efficient"></div></div>
+            </div>
+            <div class="easing-row">
+              <div class="easing-label">Informative</div>
+              <div class="easing-track"><div class="easing-dot informative"></div></div>
+            </div>
+            <div class="easing-row">
+              <div class="easing-label">Emphatic</div>
+              <div class="easing-track"><div class="easing-dot emphatic"></div></div>
+            </div>
+            <div class="easing-row">
+              <div class="easing-label">Playful</div>
+              <div class="easing-track"><div class="easing-dot playful"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-value">4 registers · different easing per intent</div>
+      </div>
+
+      <!-- 6: Hover + press -->
+      <div class="card" style="--i:5">
+        <div class="card-title">Hover preview + press</div>
+        <div class="card-demo">
+          <div>
+            <button class="hover-btn">Hover me, then press</button>
+            <div class="hover-touch-note">Hover unavailable on touch</div>
+          </div>
+        </div>
+        <div class="card-value">hover: scale 1.02 · press: scale 0.97</div>
+      </div>
+
+      <!-- 7: Swipe to delete -->
+      <div class="card" style="--i:6">
+        <div class="card-title">Swipe-to-delete gesture</div>
+        <div class="card-demo">
+          <div class="swipe-container" id="swipeDemo">
+            <div class="swipe-action">Delete</div>
+            <div class="swipe-item" id="swipeItem">
+              <div class="swipe-avatar"></div>
+              <div class="swipe-lines">
+                <div class="swipe-line"></div>
+                <div class="swipe-line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-value">threshold: 40% · 300ms spring back</div>
+      </div>
+
+      <!-- 8: Long press -->
+      <div class="card" style="--i:7">
+        <div class="card-title">Long-press buildup</div>
+        <div class="card-demo">
+          <div style="position:relative">
+            <div class="longpress-circle" id="longpressBtn">
+              <div class="longpress-ring"></div>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+            </div>
+            <div class="longpress-menu" id="longpressMenu">
+              <div class="longpress-menu-item">Edit</div>
+              <div class="longpress-menu-item">Duplicate</div>
+              <div class="longpress-menu-item">Delete</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-value">500ms buildup · staggered menu reveal</div>
+      </div>
+
+      <!-- 9: Enter/exit asymmetry -->
+      <div class="card" style="--i:8">
+        <div class="card-title">Enter/exit asymmetry</div>
+        <div class="card-demo">
+          <div class="asymmetry-demo">
+            <div class="asymmetry-toast" id="asymToast">
+              <div class="asymmetry-dot"></div>
+              Changes saved
+            </div>
+            <button class="asymmetry-toggle" id="asymToggle">Toggle</button>
+          </div>
+        </div>
+        <div class="card-value">enter: 250ms + slide · exit: 150ms fade</div>
+      </div>
+
+      <!-- 10: Stagger -->
+      <div class="card" style="--i:9">
+        <div class="card-title">Stagger pattern</div>
+        <div class="card-demo">
+          <div>
+            <div class="stagger-demo" id="staggerDemo">
+              <div class="stagger-item" style="--i:0"><div class="stagger-item-dot"></div><div class="stagger-item-bar"></div></div>
+              <div class="stagger-item" style="--i:1"><div class="stagger-item-dot"></div><div class="stagger-item-bar"></div></div>
+              <div class="stagger-item" style="--i:2"><div class="stagger-item-dot"></div><div class="stagger-item-bar"></div></div>
+              <div class="stagger-item" style="--i:3"><div class="stagger-item-dot"></div><div class="stagger-item-bar"></div></div>
+              <div class="stagger-item" style="--i:4"><div class="stagger-item-dot"></div><div class="stagger-item-bar"></div></div>
+            </div>
+            <button class="stagger-replay" id="staggerReplay">Replay</button>
+          </div>
+        </div>
+        <div class="card-value">30ms stagger · fade + slide 8px</div>
+      </div>
+
+      <!-- 11: Spring comparison -->
+      <div class="card" style="--i:10">
+        <div class="card-title">Spring physics</div>
+        <div class="card-demo">
+          <div class="spring-demo">
+            <div class="spring-col">
+              <div class="spring-ball snappy"></div>
+              <div class="spring-label">Snappy</div>
+            </div>
+            <div class="spring-col">
+              <div class="spring-ball bouncy"></div>
+              <div class="spring-label">Bouncy</div>
+            </div>
+            <div class="spring-col">
+              <div class="spring-ball smooth"></div>
+              <div class="spring-label">Smooth</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-value">same distance, different springs</div>
+      </div>
+
+      <!-- 12: Reduce motion -->
+      <div class="card" style="--i:11">
+        <div class="card-title">Reduce motion</div>
+        <div class="card-demo">
+          <div class="reduce-demo">
+            <div class="reduce-preview">
+              <div class="reduce-spinner"></div>
+              <div class="reduce-bar"></div>
+            </div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="reduceToggle" class="toggle-input">
+              <label for="reduceToggle" class="toggle-track" style="width:40px;height:24px;border-radius:12px">
+                <div class="toggle-thumb" style="width:18px;height:18px;border-radius:50%"></div>
+              </label>
+              <span style="font-size:11px;color:var(--text-dim)">Freeze all</span>
+            </label>
+          </div>
+        </div>
+        <div class="card-value">prefers-reduced-motion: reduce</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="why">
+    <h2>Why this exists</h2>
+    <p>There are good Claude Code skills for web animation already. But they're <strong>web-only</strong>. None of them cover React Native or SwiftUI. None of them touch haptics. Gesture orchestration, per-component press values, cross-platform spring mapping? Not there.</p>
+    <p>I built this because I'm a product designer who ships SaaS every day and got tired of adding the same press states and haptic calls to every component Claude built for me. The goal is <strong>UI that feels responsive and trustworthy</strong>, not flashy.</p>
+    <p>Every value in the skill is tested. Buttons scale to 0.96 because 0.9 looks like a bug and 0.98 is invisible. Press is faster than release because instant acknowledgment matters more than graceful recovery. Cards scale less than icon buttons because large elements need less movement to feel real.</p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-credit">Built by <a href="https://github.com/GeorgeTurp" target="_blank" rel="noopener">George Turp</a></div>
+    <a href="https://github.com/GeorgeTurp/design-details" class="footer-link" target="_blank" rel="noopener" aria-label="GitHub">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+    </a>
+  </footer>
+
+  <script>
+    // -- Copy to clipboard --
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      navigator.clipboard.writeText('npx skills add GeorgeTurp/design-details').then(() => {
+        this.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+          this.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+        }, 2000);
+      });
+    });
+
+    // -- Swipe demo (auto-playing loop) --
+    (function() {
+      var item = document.getElementById('swipeItem');
+      if (!item) return;
+      function runSwipe() {
+        item.animate([
+          { transform: 'translateX(0)', offset: 0 },
+          { transform: 'translateX(-40%)', offset: 0.3 },
+          { transform: 'translateX(-40%)', offset: 0.5 },
+          { transform: 'translateX(0)', offset: 0.7 },
+          { transform: 'translateX(0)', offset: 1 }
+        ], {
+          duration: 3000,
+          easing: 'cubic-bezier(0.2, 0, 0, 1)',
+          iterations: Infinity
+        });
+      }
+      // Start when visible
+      var observer = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) {
+          runSwipe();
+          observer.disconnect();
+        }
+      });
+      observer.observe(item);
+    })();
+
+    // -- Long press --
+    (function() {
+      var btn = document.getElementById('longpressBtn');
+      var menu = document.getElementById('longpressMenu');
+      if (!btn || !menu) return;
+      var timer = null;
+
+      function startPress() {
+        btn.classList.add('pressing');
+        timer = setTimeout(function() {
+          btn.classList.remove('pressing');
+          btn.classList.add('committed');
+          menu.classList.add('show');
+        }, 500);
+      }
+
+      function endPress() {
+        clearTimeout(timer);
+        btn.classList.remove('pressing', 'committed');
+        setTimeout(function() {
+          menu.classList.remove('show');
+        }, 200);
+      }
+
+      btn.addEventListener('pointerdown', startPress);
+      btn.addEventListener('pointerup', endPress);
+      btn.addEventListener('pointerleave', endPress);
+      btn.addEventListener('pointercancel', endPress);
+    })();
+
+    // -- Enter/exit asymmetry --
+    (function() {
+      var toast = document.getElementById('asymToast');
+      var toggle = document.getElementById('asymToggle');
+      if (!toast || !toggle) return;
+      var showing = false;
+
+      toggle.addEventListener('click', function() {
+        if (!showing) {
+          toast.classList.remove('exiting');
+          toast.classList.add('entering');
+          showing = true;
+          toggle.textContent = 'Hide';
+        } else {
+          toast.classList.remove('entering');
+          toast.classList.add('exiting');
+          showing = false;
+          toggle.textContent = 'Show';
+        }
+      });
+    })();
+
+    // -- Stagger --
+    (function() {
+      var demo = document.getElementById('staggerDemo');
+      var replay = document.getElementById('staggerReplay');
+      if (!demo || !replay) return;
+      var items = demo.querySelectorAll('.stagger-item');
+
+      function runStagger() {
+        items.forEach(function(item) {
+          item.classList.remove('visible');
+        });
+        // Force reflow
+        demo.offsetHeight;
+        items.forEach(function(item, i) {
+          setTimeout(function() {
+            item.classList.add('visible');
+          }, i * 30);
+        });
+      }
+
+      replay.addEventListener('click', runStagger);
+
+      // Run on first visibility
+      var observer = new IntersectionObserver(function(entries) {
+        if (entries[0].isIntersecting) {
+          runStagger();
+          observer.disconnect();
+        }
+      });
+      observer.observe(demo);
+    })();
+
+    // -- Reduce motion toggle --
+    (function() {
+      var toggle = document.getElementById('reduceToggle');
+      if (!toggle) return;
+
+      // Check OS preference
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        toggle.checked = true;
+        document.body.classList.add('reduce-motion');
+      }
+
+      toggle.addEventListener('change', function() {
+        document.body.classList.toggle('reduce-motion', this.checked);
+      });
+    })();
+
+    // -- Scroll-triggered card entrance --
+    (function() {
+      var cards = document.querySelectorAll('.card');
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var i = parseInt(entry.target.style.getPropertyValue('--i')) || 0;
+            setTimeout(function() {
+              entry.target.classList.add('visible');
+            }, i * 50);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      cards.forEach(function(card) {
+        observer.observe(card);
+      });
+    })();
+  </script>
+
+</body>
+</html>
