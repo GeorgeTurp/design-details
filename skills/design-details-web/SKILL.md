@@ -1,10 +1,9 @@
 ---
 name: design-details-web
 description: |
-  This skill should be used when implementing micro-interactions, press feedback, hover states,
-  gesture choreography, or motion on the web. Triggers when the user is working with CSS
-  transitions, Framer Motion, Web Animations API, or building interactive web components
-  that need to feel alive.
+  Web motion, hover states, and interactions using CSS transitions, Framer Motion, and WAAPI.
+  Triggers when building interactive web components with press feedback, page transitions,
+  drag, or scroll-driven animations.
 version: 0.1.0
 ---
 

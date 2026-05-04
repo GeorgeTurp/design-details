@@ -1,10 +1,9 @@
 ---
 name: design-details-swiftui
 description: |
-  This skill should be used when implementing micro-interactions, press feedback, haptics,
-  gesture choreography, or motion in SwiftUI. Triggers when the user is working with SwiftUI
-  animations, UIImpactFeedbackGenerator, SwiftUI gestures, or building interactive iOS/macOS
-  components that need to feel alive.
+  SwiftUI motion, haptics, and gestures using springs, UIFeedbackGenerator, and gesture APIs.
+  Triggers when building interactive SwiftUI components with press feedback, swipe actions,
+  drag, or haptic patterns.
 version: 0.1.0
 ---
 
