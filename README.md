@@ -1,14 +1,24 @@
 # design-details
 
-AI-generated UI is generic. Buttons don't press in. Layouts use the same three card grids. Copy reads like a model trained on every SaaS landing page. Events get tracked as `button_clicked`. You end up retrofitting each detail by hand, screen by screen.
+AI-generated UI has a sameness to it. Even when the code works, the details that separate considered from generic — they're not there. You end up retrofitting each one by hand, screen by screen.
 
-This is a Claude Code skill that fixes that. Install it and Claude starts working on the small details that decide whether a UI feels considered or generic — motion, layout, copy, typography, color, accessibility, and the analytics events you ship alongside the feature.
+design-details is a Claude Code skill suite that puts those details in front of the work, not after it.
+
+- **At the start of a session**, `/start` sets twelve working rules (think before coding, simplicity first, fail loud, no speculative abstractions), gathers the minimum project context, and points Claude at the right craft skills before any code is written.
+- **As you build**, focused craft skills activate when you need them — layout, motion and haptics, copy and tone, typography, color and contrast, accessibility, and the analytics events you ship alongside the feature.
+- **Before you ship**, `/design-details` runs a full audit: scope preamble, every relevant craft skill in order, lettered findings, and a row-by-row walkthrough.
 
 ## What you get
 
-A parent skill that routes to focused sub-skills, plus a session-start skill that ties them together:
+Two top-level entry points (`/start` and `/design-details`) plus seven focused craft skills you can invoke directly.
+
+### Entry points
 
 - **start** — Hit `/start` at the beginning of any coding session. Establishes the working rules, gathers the minimum project context, and routes you to the right craft skills before any code is written.
+- **design-details** — The parent router. Hit `/design-details` on a finished surface for a full audit: scope preamble, every relevant craft skill run in order, lettered findings, and a row-by-row walkthrough at the end.
+
+### Craft skills (invokable individually)
+
 - **design-details-animation** — Press feedback tuned per component. Buttons scale to 0.96, cards to 0.98, icon buttons to 0.85. Gestures with real physics. Haptics that mean something. Motion that carries intent.
 - **design-details-layout** — Spacing on a scale. Optical alignment. Concentric radius. One primary action per view. The squint test.
 - **design-details-copy** — Specific labels, kind errors, useful empty states, no AI-slop loading messages, the right typographic characters.
@@ -39,7 +49,9 @@ You can also install a single topic sub-skill if you only need one:
 npx skills add GeorgeTurp/design-details --skill design-details-copy
 ```
 
-(Topic skills: `start`, `design-details-animation`, `design-details-layout`, `design-details-copy`, `design-details-typography`, `design-details-color`, `design-details-accessibility`, `design-details-analytics`.)
+Available skills:
+- Entry points: `start`, `design-details`
+- Craft skills: `design-details-animation`, `design-details-layout`, `design-details-copy`, `design-details-typography`, `design-details-color`, `design-details-accessibility`, `design-details-analytics`
 
 ### Update to the latest version
 
@@ -92,13 +104,15 @@ The parent owns the protocols (Design System Protocol, Context Gathering Protoco
 
 ## When it kicks in
 
-You don't have to invoke it. The parent activates when the user asks for a UI review or polish pass. Each sub-skill activates when the user names that concern — "fix the spacing", "this copy is confusing", "audit the contrast", "what should we track here?"
+There are two ways to use it.
 
-If the user describes something that spans multiple concerns ("polish this page"), the parent runs a full audit and routes through every sub-skill that applies, with a scope preamble so nothing gets silently skipped.
+**At the start of a session — `/start`.** Sets the working rules, gathers the minimum project context, and points Claude at the right craft skills before any code is written. The recommended opener whenever you sit down to build or change something non-trivial.
+
+**Mid-flight or at the end — direct invocation or auto-activation.** You don't have to invoke anything: each craft skill activates when the user names that concern ("fix the spacing", "this copy is confusing", "audit the contrast", "what should we track here?"). If the user describes something that spans multiple concerns ("polish this page"), `/design-details` runs a full audit and routes through every sub-skill that applies, with a scope preamble so nothing gets silently skipped.
 
 ## Why this exists
 
-I'm a product designer who ships SaaS every day. I got tired of asking Claude for the same press states, the same fixed spacing, the same rewritten error messages, the same retrofitted tracking — feature after feature. This skill puts the details in front of the work, so Claude ships them with the feature instead of after it.
+I'm a product designer who ships SaaS every day. I got tired of asking Claude for the same things over and over — the press states that never came, the spacing that drifted off the scale, the focus rings deleted by `outline: none`, the dark mode that was just an inverted light mode, the error copy that blamed the user, the events tracked as `button_clicked`, the self-review that never happened. So I put the working rules, the references, and the audit format into a skill suite. The details show up with the feature now, not after it.
 
 ## License
 
