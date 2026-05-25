@@ -35,19 +35,11 @@ The animation sub-skill ships with three platform implementations bundled inside
 
 ## Install
 
-The quickest way:
-
 ```bash
-npx skills add GeorgeTurp/design-details
+npm install -g design-details
 ```
 
-This installs the parent skill and all sub-skills into your Claude Code skills directory. The CLI will ask which agent to target if you have multiple installed.
-
-You can also install a single topic sub-skill if you only need one:
-
-```bash
-npx skills add GeorgeTurp/design-details --skill design-details-copy
-```
+That installs all nine skills into `~/.claude/skills/` and prints a banner with the version. No further setup. Restart Claude Code afterward.
 
 Available skills:
 - Entry points: `start`, `design-details`
@@ -56,29 +48,26 @@ Available skills:
 ### Update to the latest version
 
 ```bash
-npx skills update GeorgeTurp/design-details
+npm install -g design-details@latest
 ```
 
-This pulls the latest version of all installed sub-skills. The CLI auto-detects whether you installed globally or in a project — use `-g` or `-p` to force the scope.
+That's the single line you need. It re-runs the install, fires the `postinstall` script, and prints `✦ design-details v<x.y.z> installed` so you always see what you're on. Read `CHANGELOG.md` for what changed.
 
-If you installed via `git clone` instead, just `git pull` inside the cloned directory.
+### Alternative install methods
 
-### Manual install
+If you don't want to use the npm registry, you can install directly from GitHub via the `skills` CLI:
 
-Clone globally (all projects):
+```bash
+npx skills add GeorgeTurp/design-details -g
+```
+
+Or via `git clone`:
 
 ```bash
 git clone https://github.com/GeorgeTurp/design-details.git ~/.claude/skills/design-details
 ```
 
-Or into a single project:
-
-```bash
-# From your project root
-git clone https://github.com/GeorgeTurp/design-details.git .claude/skills/design-details
-```
-
-Restart Claude Code after installing. No config needed.
+Both bypass the postinstall banner. Updates for the `skills` CLI path are `npx skills update -g`; for the git clone path, just `git pull` in the cloned directory.
 
 ## How it's structured
 
@@ -116,13 +105,15 @@ The suite version lives in [`package.json`](./package.json) — currently **0.2.
 
 Each individual skill also carries its own `version:` field in its `SKILL.md` frontmatter. Those bump independently — a change to `design-details-copy` only bumps that skill's version (and the suite version), not every skill.
 
-When you install or update via `npx skills`, a postinstall script prints the version banner so you know what you're on:
+When you install or update via `npm install -g design-details@latest`, a postinstall script prints the version banner so you know exactly what you landed on:
 
 ```
 ✦ design-details v0.2.1 installed
   Skills linked: start, design-details, design-details-animation, …
   See CHANGELOG.md for what changed.
 ```
+
+npm itself also prints `+ design-details@0.2.1` after install, so the version is visible from two sources.
 
 Read `CHANGELOG.md` (or [view it on GitHub](https://github.com/GeorgeTurp/design-details/blob/main/CHANGELOG.md)) for the details of each release.
 
