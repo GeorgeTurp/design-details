@@ -1,104 +1,182 @@
 ---
 name: design-details
 description: |
-  Make UI feel alive: press feedback, haptics, gestures, emotional motion.
-  Triggers on "add micro-interactions", "make it feel responsive", "add haptics",
-  "choreograph gestures", "make it feel native", or when building interactive components.
-version: 0.1.0
+  Design router for UI quality work. Routes to focused sub-skills for animation, layout, copy, typography, color, accessibility, and analytics instrumentation.
+  Triggers on "review this UI", "polish this", "audit this screen", or when the user names a specific design concern that maps to a sub-skill.
+version: 0.2.0
+user-invocable: true
+argument-hint: "[design-details-animation|design-details-layout|design-details-copy|design-details-typography|design-details-color|design-details-accessibility|design-details-analytics]"
 ---
 
 # design-details
 
-Make UI feel alive by default. Every interactive element should respond to touch, every transition should carry intent, and every platform should feel native.
+The details are the product. Spacing, motion, copy, color, type, focus order, and the events you instrument — each one is small on its own, and together they decide whether the UI feels considered or generic.
 
-This is not about decoration. Motion and feedback exist to build trust — to tell users "this worked", "this is dangerous", "you're in control." Business software that feels alive converts better, reduces support tickets, and makes complex workflows survivable.
+This is the parent skill. It holds the shared protocols every sub-skill depends on, and it routes work to the right focused mode. Each sub-skill is also invokable on its own when the user already knows what they need.
 
-## Decision framework
+---
 
-Before adding any interaction detail, answer three questions:
+## Design System Protocol
 
-1. **What is the user feeling right now?** (confused, confident, anxious, bored)
-2. **What should they feel after this interaction?** (reassured, warned, delighted, oriented)
-3. **What's the minimum motion that bridges those two states?**
+**Before suggesting any value — spacing, color, type size, radius, shadow, easing, duration — check for existing tokens, CSS variables, or component conventions in the codebase.**
 
-If the answer to #3 is "none," skip it. Over-animation is worse than none.
+Scan for:
+- CSS custom properties (`--color-*`, `--space-*`, `--text-*`, `--radius-*`, `--ease-*`, `--duration-*`)
+- Tailwind config (`tailwind.config.js/ts`) for custom tokens
+- Design token files (`tokens.json`, `theme.ts`, etc.)
+- SwiftUI / RN theme objects (`Theme.swift`, `theme.ts`, design system packages)
+- Existing component patterns — how are buttons, cards, inputs, modals already built?
 
-## Core principles
+**Rule: propose adjustments using the existing system. Never override — suggest.** If a token exists for something, use it. If a value doesn't exist in the system, note the gap and propose adding it to the design system rather than hardcoding.
 
-### Feedback is not optional
-Every tappable element needs a press state. Every destructive action needs friction. Every success needs confirmation. The absence of feedback is a bug.
+This applies to every sub-skill below.
 
-### Motion carries meaning
-- **Fast ease-out (150-200ms)**: "Done. Moving on." — confirmations, dismissals
-- **Medium spring (250-350ms)**: "Here's something new" — reveals, transitions
-- **Slow ease-in-out (400-600ms)**: "Pay attention to this" — warnings, onboarding
-- **Bouncy spring (300-500ms, underdamped)**: "This is fun / casual" — celebrations, playful UI
+---
 
-### Platform feel is non-negotiable
-iOS users expect springs. Android users expect emphasized easing. Web users expect CSS transitions that don't jank. Never impose one platform's idioms on another.
+## Context Gathering Protocol
 
-### Haptics complete the loop
-Touch feedback without haptics is like a button with no click. On platforms that support it, pair visual feedback with appropriate vibration patterns.
+Design work without context produces generic output. Before any audit or change, confirm you have this minimum:
 
-## When this skill activates
+- **Target audience**: who uses this product, in what context?
+- **Use cases**: what jobs are they trying to get done?
+- **Brand personality / tone**: how should the interface feel?
+- **Platform constraint**: web, iOS, Android, React Native, or mixed? (Animation work especially needs this — never guess.)
 
-### Automatic triggers
-- Building any interactive component (buttons, cards, toggles, inputs)
-- Creating navigation transitions or page changes
-- Implementing drag, swipe, or gesture interactions
-- Adding loading states, success/error feedback, or confirmations
+**Gathering order:**
+1. Check current instructions for a **Design Context** section — if present, proceed.
+2. Check `.design-details.md` or `CLAUDE.md` at the project root — if present and sufficient, proceed.
+3. Otherwise ask the user directly for the items above. Do **not** infer from the codebase — code tells you what was built, not who it's for.
 
-### Explicit triggers
-- User asks for motion, animation, micro-interactions, or polish
-- User says something "feels dead", "static", or "flat"
-- User wants haptic feedback or gesture choreography
+**If context is missing, stop and ask — do not run the audit.** A review without context produces generic findings that waste time and miss what actually matters. One focused question upfront beats a skewed audit.
 
-## How to apply details
+---
 
-### Step 1 — Identify the component type
-Determine what's being built and load the relevant reference:
-- **Buttons, cards, toggles, inputs** → `references/press-feedback.md`
-- **Swipe, drag, long-press** → `references/gesture.md`
-- **Success, error, warning feedback** → `references/haptics.md`
-- **Transitions, reveals, page changes** → `references/motion-language.md`
-- **Cross-platform implementation** → `references/platform-map.md`
+## Sub-Skills
 
-### Step 2 — Detect the platform
-Route to the platform-specific sub-skill for implementation:
-- **React Native** → `design-details-react-native` (Reanimated 3, Gesture Handler)
-- **SwiftUI** → `design-details-swiftui` (SwiftUI springs, UIFeedbackGenerator)
-- **Web** → `design-details-web` (CSS transitions, Framer Motion, WAAPI)
+Each sub-skill is invokable on its own. Use this table to decide which to load.
 
-If the platform is ambiguous, ask. Never guess.
+| Sub-skill | When to use | Read |
+| --- | --- | --- |
+| **design-details-animation** | Motion, press feedback, haptics, gestures, micro-interactions, transitions, anything that should "feel alive". Auto-detects platform (React Native / SwiftUI / Web) from project context. | `../design-details-animation/SKILL.md` |
+| **design-details-layout** | Spacing, alignment, sizing, visual hierarchy, rhythm, concentric radius, grid | `../design-details-layout/SKILL.md` |
+| **design-details-copy** | Microcopy, labels, error messages, empty states, CTAs, tone, voice | `../design-details-copy/SKILL.md` |
+| **design-details-typography** | Font choice, hierarchy, weight, sizing, line-height, readability, typographic characters | `../design-details-typography/SKILL.md` |
+| **design-details-color** | Palettes, contrast, dark mode, semantic color, accessible color pairings | `../design-details-color/SKILL.md` |
+| **design-details-accessibility** | Keyboard traversal, focus, screen readers, hit areas, motion preferences, reduced data | `../design-details-accessibility/SKILL.md` |
+| **design-details-analytics** | Instrumentation: what to track, how to name events and properties, when to add tracking as you ship UI | `../design-details-analytics/SKILL.md` |
 
-### Step 3 — Apply the detail
-Use the reference values, don't invent. The references contain tested values for scale, opacity, shadow, timing, and haptic patterns. Deviate only with justification.
+If the user names one concern, invoke that sub-skill. If they describe something that spans multiple ("polish this page", "review this screen"), run a full audit (see below).
 
-### Step 4 — Respect accessibility
-- Honor `prefers-reduced-motion` / `UIAccessibility.isReduceMotionEnabled` / `AccessibilityInfo.isReduceMotionEnabled`
-- Provide instant state changes as fallbacks — never remove the feedback, only the motion
-- Haptics should be optional and respect system settings
+---
 
-## What NOT to do
+## Full Audit Contract
 
-- Don't animate everything. Static content should stay static.
-- Don't add spring physics to data tables or dense information layouts.
-- Don't use bouncy animations in finance, healthcare, or serious workflow contexts unless explicitly asked.
-- Don't add haptics to scroll or passive viewing — only to intentional interactions.
-- Don't exceed 400ms for any interaction that blocks user flow.
+When invoked as `design-details` with no specific sub-skill, the expectation is a **complete audit**, not a highlight reel. Partial coverage is the failure mode to avoid.
 
-## Additional resources
+### 1. Run every sub-skill that applies to the target
 
-### Reference files
-Detailed values and patterns per domain:
-- **`references/press-feedback.md`** — Scale, shadow, opacity, and ripple values by component type
-- **`references/gesture.md`** — Swipe, long-press, drag-with-momentum orchestration
-- **`references/haptics.md`** — Vibration patterns per platform and interaction type
-- **`references/motion-language.md`** — How easing and timing convey emotion
-- **`references/platform-map.md`** — Cross-platform value mapping (iOS ↔ CSS ↔ React Native)
+For a typical UI screen: layout, animation, copy, typography, color, accessibility. Skip a sub-skill only if the target genuinely has nothing for it to look at, and say so out loud.
 
-### Platform sub-skills
-Implementation patterns for each platform:
-- **`design-details-react-native`** — Reanimated 3, Gesture Handler, Expo Haptics
-- **`design-details-swiftui`** — SwiftUI `.animation()`, `UIImpactFeedbackGenerator`, gesture APIs
-- **`design-details-web`** — CSS transitions, Framer Motion, Web Animations API
+Analytics is an opt-in pass: run it when the user asks for instrumentation review, when they mention tracking, or when they're shipping a flow that needs events.
+
+### 2. Surface coverage
+
+Each of these must be either audited or explicitly acknowledged as skipped (with a reason).
+
+- Desktop at rest
+- Narrow viewport / mobile (or the smallest target platform)
+- Modals, popovers, and overlays present on the page
+- Error and failure paths (what the user sees when a mutation fails)
+- Empty states (zero items, no data yet)
+- Loading and pending states
+- Keyboard-only traversal (tab order, focus rings, reachability)
+- Reduced-motion behavior (for animation reviews)
+- Screen reader signals for dynamic content (live regions, aria states)
+
+### 3. Scope preamble (before findings)
+
+Start every full audit with a short paragraph stating what was audited and what was not, before any findings. No silent omissions. Format:
+
+> **Scope:** Audited [list]. Did not audit [list] because [reason per item].
+
+Example:
+
+> **Scope:** Audited desktop at rest, keyboard traversal, the two modals on the page, empty and error states, and the animation reduced-motion path. Did not audit narrow viewport (page is marketed as desktop-only per CLAUDE.md) or screen reader behavior (would need VoiceOver, not inferrable from code).
+
+The preamble is a commitment device: it forces the audit to be deliberate about coverage, and gives the user a place to push back before reading the findings.
+
+---
+
+## Core Principles
+
+These apply across every sub-skill. Keep them in mind whether you are tuning a spring, picking a type scale, or naming an event.
+
+1. **The user feeling drives the detail.** Before adding anything, ask: what is the user feeling now, what should they feel after this, and what's the minimum change that bridges those two states? If the answer is "none," skip it.
+2. **Unseen details compound.** Most details users never consciously notice — that is the point. Aggregate invisible correctness is what people *feel*.
+3. **Intent over intensity.** Bold maximalism and refined minimalism both work. What fails is the timid generic middle.
+4. **Platform feel is non-negotiable.** iOS expects springs. Android expects emphasized easing. Web expects CSS transitions that don't jank. Never impose one platform's idioms on another.
+5. **Reversibility.** Prefer reversible changes. A subtle refinement that works beats a bold swing that misses.
+6. **Accessibility is the floor, not the ceiling.** Honor reduced motion, focus rings, hit areas, contrast. The skill never ships a recommendation that breaks these.
+
+---
+
+## Review Output Format
+
+Present findings grouped into lettered sections. Each section clusters related issues under a descriptive title. One row per change, numbered within its section.
+
+### Structure
+
+```
+## A — [title describing what was found]
+| # | Before | After | Why |
+|---|--------|-------|-----|
+| A1 | ... | ... | ... |
+| A2 | ... | ... | ... |
+
+## B — [title describing what was found]
+| # | Before | After | Why |
+|---|--------|-------|-----|
+| B1 | ... | ... | ... |
+```
+
+### Section titles
+
+The letter is fixed (A, B, C…) for addressing. The title is generated from what you actually found — never a generic category label.
+
+- ✓ `## A — Concentric radius drift`
+- ✓ `## B — Missing press feedback on card rows`
+- ✓ `## C — Vague confirmation copy`
+- ✗ `## A — Layout & rhythm` — too generic, tells the user nothing
+
+Use only sections that have findings. Omit empty sections entirely.
+
+### Closing
+
+End every review by proactively offering walkthrough mode with an `AskUserQuestion` call. Phrase it naturally based on what the review found — vary the wording so it stays human. Examples (not templates to copy verbatim):
+
+- "Want to go through these one at a time, or take the list as it is?"
+- "Happy to walk row by row if that's easier. Or leave it with you to pick?"
+- "There's a lot here. Want me to help you triage, one decision at a time?"
+
+Options should be: **Walk through** / **Take the list** (plus any contextual third option if it fits).
+
+### Walkthrough mode
+
+When the user chooses to walk through, or when intent is clear from their wording (wanting to decide item by item, asking for help deciding, one at a time), use `AskUserQuestion` per item.
+
+Options per item: **Apply** / **Decline** / **Discuss** / **Stop**
+
+- `Discuss` = user pushes back or proposes a variant; respond, then re-ask the same item.
+- Before starting a new section, if its items are closely related, offer `Apply all in [section]` as a single batch question — don't force row-by-row when a batch is obvious.
+- On `Stop`, summarize what was applied, declined, and what's still open. Example: `Done: A1 and A2. Declined A3. Stopped with B1–B4 still open.`
+
+### Inline code
+
+If an item requires a code snippet, include it inside the After cell. Never break out of the table format to show code separately.
+
+---
+
+## Meta
+
+- **Version**: see frontmatter. Bump on any substantive change to protocols, sub-skill routing, or output format.
+- **Adding a sub-skill**: each new sub-skill must follow the pattern in `design-details-layout/SKILL.md`: frontmatter with `user-invocable: true`, a MANDATORY PREPARATION block that invokes this parent, and a clear When-to-Use list. Add a row to the Sub-Skills table above.

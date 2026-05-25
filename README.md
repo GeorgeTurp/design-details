@@ -1,30 +1,27 @@
 # design-details
 
-AI-generated UI is static. Buttons don't press in. Toggles don't snap. Nothing vibrates when it should. You end up retrofitting every micro-interaction by hand, one component at a time.
+AI-generated UI is generic. Buttons don't press in. Layouts use the same three card grids. Copy reads like a model trained on every SaaS landing page. Events get tracked as `button_clicked`. You end up retrofitting each detail by hand, screen by screen.
 
-This is a Claude Code skill that fixes that. Install it and Claude starts building UI that actually feels alive. Press feedback, gesture choreography, haptics, motion with intent. All there from the start.
-
-## The problem
-
-You ask Claude to build a button. You get a button. It works. It does nothing when you press it though. No scale, no haptic, no spring-back. Just sits there.
-
-So you say "add a press animation." You get something. Maybe `scale(0.9)`, which is way too much. Maybe a 500ms ease-in, which feels sluggish. Maybe it works on web but you're building React Native and now you're redoing the whole thing with Reanimated.
-
-This skill means you don't have to ask. The details show up with the right values, on the right platform.
+This is a Claude Code skill that fixes that. Install it and Claude starts working on the small details that decide whether a UI feels considered or generic — motion, layout, copy, typography, color, accessibility, and the analytics events you ship alongside the feature.
 
 ## What you get
 
-Press feedback tuned per component. Buttons scale to 0.96, cards to 0.98, icon buttons to 0.85 (small things need more movement to feel real). Each component type has its own values for scale, opacity, shadow, and haptic intensity.
+A parent skill that routes to focused sub-skills, plus a session-start skill that ties them together:
 
-Haptics that actually mean something. A light tap for acknowledgment, medium for commits, heavy for destructive actions. Not random buzzing.
+- **start** — Hit `/start` at the beginning of any coding session. Establishes the working rules, gathers the minimum project context, and routes you to the right craft skills before any code is written.
+- **design-details-animation** — Press feedback tuned per component. Buttons scale to 0.96, cards to 0.98, icon buttons to 0.85. Gestures with real physics. Haptics that mean something. Motion that carries intent.
+- **design-details-layout** — Spacing on a scale. Optical alignment. Concentric radius. One primary action per view. The squint test.
+- **design-details-copy** — Specific labels, kind errors, useful empty states, no AI-slop loading messages, the right typographic characters.
+- **design-details-typography** — Hierarchy through contrast, not just size. Tabular figures in tables. OpenType features. Curly quotes and em-dashes.
+- **design-details-color** — Palette structure with scales, not just "blue". Dark mode that's re-designed, not inverted. Semantic color used semantically.
+- **design-details-accessibility** — Keyboard traversal, focus rings, hit areas, reduced motion, screen reader signals. The floor before shipping.
+- **design-details-analytics** — Events named as outcomes, not implementation. Properties that carry the story. Identify before track. Fire on success, not intent.
 
-Gestures with real physics. Swipe thresholds with rubber-banding past the edge, long-press with progressive buildup so the user knows something's happening, drag with momentum that decelerates naturally.
+The animation sub-skill ships with three platform implementations bundled inside it. When `design-details-animation` activates, it detects the platform from your project (React Native / SwiftUI / Web) and loads the right one automatically — you don't pick. One set of values, three native implementations.
 
-Motion that carries intent. Fast ease-out says "done, moving on." A bouncy spring says "this is fun." Slow ease-in-out says "pay attention to this." The skill picks the right register for the context.
-
-Cross-platform translations so a SwiftUI `.spring(duration: 0.3, bounce: 0.2)` maps correctly to Reanimated and CSS, not just vibes.
-
-Works with React Native (Reanimated 3 + Gesture Handler), SwiftUI, and web (CSS, Framer Motion, WAAPI).
+- React Native — Reanimated 3, Gesture Handler, Expo Haptics
+- SwiftUI — SwiftUI springs, UIFeedbackGenerator, gesture APIs
+- Web — CSS transitions, Framer Motion, Web Animations API
 
 ## Install
 
@@ -34,17 +31,29 @@ The quickest way:
 npx skills add GeorgeTurp/design-details
 ```
 
-This installs all four skills (parent + React Native, SwiftUI, web) into your Claude Code skills directory. The CLI will ask which agent to target if you have multiple installed.
+This installs the parent skill and all sub-skills into your Claude Code skills directory. The CLI will ask which agent to target if you have multiple installed.
 
-You can also install a single sub-skill if you only work on one platform:
+You can also install a single topic sub-skill if you only need one:
 
 ```bash
-npx skills add GeorgeTurp/design-details --skill design-details-react-native
+npx skills add GeorgeTurp/design-details --skill design-details-copy
 ```
+
+(Topic skills: `start`, `design-details-animation`, `design-details-layout`, `design-details-copy`, `design-details-typography`, `design-details-color`, `design-details-accessibility`, `design-details-analytics`.)
+
+### Update to the latest version
+
+```bash
+npx skills update GeorgeTurp/design-details
+```
+
+This pulls the latest version of all installed sub-skills. The CLI auto-detects whether you installed globally or in a project — use `-g` or `-p` to force the scope.
+
+If you installed via `git clone` instead, just `git pull` inside the cloned directory.
 
 ### Manual install
 
-If you prefer git clone, you can install globally (all projects):
+Clone globally (all projects):
 
 ```bash
 git clone https://github.com/GeorgeTurp/design-details.git ~/.claude/skills/design-details
@@ -63,32 +72,33 @@ Restart Claude Code after installing. No config needed.
 
 ```
 skills/
-├── design-details/              # Principles + reference values
-│   ├── SKILL.md                 # Decision framework, when to activate
-│   └── references/
-│       ├── press-feedback.md    # Exact scale/shadow/haptic per component type
-│       ├── gesture.md           # Swipe, long-press, drag patterns
-│       ├── haptics.md           # What each vibration means, per platform
-│       ├── motion-language.md   # Timing that conveys emotion
-│       └── platform-map.md     # iOS ↔ CSS ↔ React Native translations
-├── design-details-react-native/ # Reanimated, Gesture Handler, Expo Haptics
-├── design-details-swiftui/      # SwiftUI springs, UIFeedbackGenerator
-└── design-details-web/          # CSS transitions, Framer Motion, WAAPI
+├── start/                            # Session opener: rules + context + skill routing
+├── design-details/                   # Parent: routing, shared protocols, audit contract
+├── design-details-animation/         # Motion, haptics, gestures, press feedback
+│   ├── references/                   # Tuned values per component, platform mapping
+│   └── platforms/                    # Auto-picked from project context
+│       ├── react-native.md           # Reanimated, Gesture Handler, Expo Haptics
+│       ├── swiftui.md                # SwiftUI springs, UIFeedbackGenerator
+│       └── web.md                    # CSS transitions, Framer Motion, WAAPI
+├── design-details-layout/            # Spacing, alignment, hierarchy
+├── design-details-copy/              # Labels, errors, tone, microcopy
+├── design-details-typography/        # Hierarchy, scale, OpenType, characters
+├── design-details-color/             # Palette structure, contrast, dark mode
+├── design-details-accessibility/     # Keyboard, focus, screen readers, reduced motion
+└── design-details-analytics/         # Instrumentation as you ship
 ```
 
-The parent skill owns the values (scale 0.96, 150ms, light haptic). The platform sub-skills own the implementation (`withSpring`, `.spring()`, `cubic-bezier`). One set of numbers, three native implementations.
+The parent owns the protocols (Design System Protocol, Context Gathering Protocol, audit contract, output format). Each topic sub-skill owns its domain. Platform implementations live inside the animation skill and are selected automatically based on the project — you never need to pick.
 
 ## When it kicks in
 
-You don't invoke it. It activates on its own when you're building interactive components, creating transitions, working with gestures, or asking for polish. If you tell Claude something "feels dead" or "flat," that triggers it too.
+You don't have to invoke it. The parent activates when the user asks for a UI review or polish pass. Each sub-skill activates when the user names that concern — "fix the spacing", "this copy is confusing", "audit the contrast", "what should we track here?"
 
-Every detail runs through a simple filter: what is the user feeling now, what should they feel after this interaction, and what's the minimum motion that bridges those two states? If the answer is "none," it skips it.
+If the user describes something that spans multiple concerns ("polish this page"), the parent runs a full audit and routes through every sub-skill that applies, with a scope preamble so nothing gets silently skipped.
 
 ## Why this exists
 
-There are good Claude Code skills for web animation already, like [animate](https://github.com/anthropics/claude-code), [delight](https://github.com/anthropics/claude-code), and [emil-design-eng](https://github.com/emilkowalski/skill). But they're web-only. None of them cover React Native or SwiftUI. None of them touch haptics. Gesture orchestration, per-component press values, cross-platform spring mapping? Not there.
-
-I built this because I'm a product designer who ships SaaS every day and got tired of adding the same press states and haptic calls to every component Claude built for me. The goal is UI that feels responsive and trustworthy, not flashy.
+I'm a product designer who ships SaaS every day. I got tired of asking Claude for the same press states, the same fixed spacing, the same rewritten error messages, the same retrofitted tracking — feature after feature. This skill puts the details in front of the work, so Claude ships them with the feature instead of after it.
 
 ## License
 

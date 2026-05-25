@@ -1,17 +1,8 @@
----
-name: design-details-swiftui
-description: |
-  SwiftUI motion, haptics, and gestures using springs, UIFeedbackGenerator, and gesture APIs.
-  Triggers when building interactive SwiftUI components with press feedback, swipe actions,
-  drag, or haptic patterns.
-version: 0.1.0
----
-
-# design-details-swiftui
+# Animation implementation — SwiftUI
 
 Implementation patterns for making SwiftUI UI feel alive using native springs, haptic feedback generators, and gesture APIs.
 
-This sub-skill is part of **design-details**. Consult the parent skill's references for values. This file covers _how_ to implement in SwiftUI.
+This file is loaded by `design-details-animation` when the target is SwiftUI. Values come from `../references/` (press-feedback, gesture, haptics, motion-language, platform-map). This file covers *how* to implement in SwiftUI.
 
 ## Press feedback pattern
 

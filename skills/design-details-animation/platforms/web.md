@@ -1,17 +1,8 @@
----
-name: design-details-web
-description: |
-  Web motion, hover states, and interactions using CSS transitions, Framer Motion, and WAAPI.
-  Triggers when building interactive web components with press feedback, page transitions,
-  drag, or scroll-driven animations.
-version: 0.1.0
----
-
-# design-details-web
+# Animation implementation — Web
 
 Implementation patterns for making web UI feel alive using CSS transitions, Framer Motion, and the Web Animations API.
 
-This sub-skill is part of **design-details**. Consult the parent skill's references for values. This file covers _how_ to implement on the web.
+This file is loaded by `design-details-animation` when the target is web. Values come from `../references/` (press-feedback, gesture, haptics, motion-language, platform-map). This file covers *how* to implement on the web.
 
 ## Press feedback pattern
 

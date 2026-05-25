@@ -1,17 +1,8 @@
----
-name: design-details-react-native
-description: |
-  React Native motion, haptics, and gestures using Reanimated 3 + Gesture Handler + Expo Haptics.
-  Triggers when building interactive React Native components with press feedback, swipe actions,
-  drag, or haptic patterns.
-version: 0.1.0
----
-
-# design-details-react-native
+# Animation implementation — React Native
 
 Implementation patterns for making React Native UI feel alive using Reanimated 3, Gesture Handler 2, and Expo Haptics.
 
-This sub-skill is part of **design-details**. Consult the parent skill's references for values (press-feedback.md, gesture.md, haptics.md, motion-language.md, platform-map.md). This file covers _how_ to implement, the parent covers _what_ values to use.
+This file is loaded by `design-details-animation` when the target is React Native. Values come from `../references/` (press-feedback, gesture, haptics, motion-language, platform-map). This file covers *how* to implement; the references cover *what* values to use.
 
 ## Core dependencies
 
