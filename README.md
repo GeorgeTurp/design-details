@@ -110,6 +110,14 @@ There are two ways to use it.
 
 **Mid-flight or at the end — direct invocation or auto-activation.** You don't have to invoke anything: each craft skill activates when the user names that concern ("fix the spacing", "this copy is confusing", "audit the contrast", "what should we track here?"). If the user describes something that spans multiple concerns ("polish this page"), `/design-details` runs a full audit and routes through every sub-skill that applies, with a scope preamble so nothing gets silently skipped.
 
+## Versioning
+
+The suite version lives in [`package.json`](./package.json) — currently **0.2.0**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
+
+Each individual skill also carries its own `version:` field in its `SKILL.md` frontmatter. Those bump independently — a change to `design-details-copy` only bumps that skill's version (and the suite version), not every skill.
+
+After updating, check `CHANGELOG.md` to see what's new. The `npx skills update` command doesn't display versions or diffs itself, so the changelog is the source of truth.
+
 ## Why this exists
 
 I'm a product designer who ships SaaS every day. I got tired of asking Claude for the same things over and over — the press states that never came, the spacing that drifted off the scale, the focus rings deleted by `outline: none`, the dark mode that was just an inverted light mode, the error copy that blamed the user, the events tracked as `button_clicked`, the self-review that never happened. So I put the working rules, the references, and the audit format into a skill suite. The details show up with the feature now, not after it.
