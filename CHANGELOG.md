@@ -4,6 +4,15 @@ All notable changes to this skill suite are documented here. The format is based
 
 The suite version (shown in `package.json`) bumps whenever any skill in the suite changes. Each individual `SKILL.md` also carries its own `version:` field that bumps independently when that skill changes.
 
+## [0.2.1] — 2026-05-25
+
+### Added
+- `scripts/install.js` and `scripts/uninstall.js` wired via npm `postinstall` / `preuninstall` lifecycle hooks. On install or update, the script prints `✦ design-details v<version> installed` so users see which version they're on, plus a link to the changelog.
+- `package.json` gains `files`, `scripts`, and `engines` fields so the package follows standard npm conventions.
+
+### Why
+Previously the version field lived in `package.json` and each `SKILL.md` frontmatter, but the `npx skills update` flow never surfaced it. Now the postinstall script explicitly prints the suite version after every install or update.
+
 ## [0.2.0] — 2026-05-25
 
 Restructure from a single animation-focused skill into a multi-skill design suite.

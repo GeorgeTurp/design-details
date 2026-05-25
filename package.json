@@ -1,6 +1,6 @@
 {
   "name": "design-details",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Claude Code skill suite for shipping considered UI — working rules at session start, focused craft skills for layout, motion, copy, typography, color, accessibility, and analytics, plus a full-audit mode.",
   "repository": {
     "type": "git",
@@ -12,6 +12,18 @@
   },
   "author": "George Turp",
   "license": "MIT",
+  "files": [
+    "skills/",
+    "scripts/",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/install.js",
+    "preuninstall": "node scripts/uninstall.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
   "keywords": [
     "claude-code",
     "claude-code-skill",

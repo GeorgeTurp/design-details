@@ -112,11 +112,19 @@ There are two ways to use it.
 
 ## Versioning
 
-The suite version lives in [`package.json`](./package.json) — currently **0.2.0**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
+The suite version lives in [`package.json`](./package.json) — currently **0.2.1**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 Each individual skill also carries its own `version:` field in its `SKILL.md` frontmatter. Those bump independently — a change to `design-details-copy` only bumps that skill's version (and the suite version), not every skill.
 
-After updating, check `CHANGELOG.md` to see what's new. The `npx skills update` command doesn't display versions or diffs itself, so the changelog is the source of truth.
+When you install or update via `npx skills`, a postinstall script prints the version banner so you know what you're on:
+
+```
+✦ design-details v0.2.1 installed
+  Skills linked: start, design-details, design-details-animation, …
+  See CHANGELOG.md for what changed.
+```
+
+Read `CHANGELOG.md` (or [view it on GitHub](https://github.com/GeorgeTurp/design-details/blob/main/CHANGELOG.md)) for the details of each release.
 
 ## Why this exists
 
