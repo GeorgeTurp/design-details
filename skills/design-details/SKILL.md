@@ -3,9 +3,9 @@ name: design-details
 description: |
   Design router for UI quality work. Routes to focused sub-skills for animation, layout, copy, typography, color, accessibility, and analytics instrumentation.
   Triggers on "review this UI", "polish this", "audit this screen", or when the user names a specific design concern that maps to a sub-skill.
-version: 0.2.1
+version: 0.3.0
 user-invocable: true
-argument-hint: "[design-details-animation|design-details-layout|design-details-copy|design-details-typography|design-details-color|design-details-accessibility|design-details-analytics]"
+argument-hint: "[init|design-details-animation|design-details-layout|design-details-copy|design-details-typography|design-details-color|design-details-accessibility|design-details-analytics]"
 ---
 
 # design-details
@@ -44,10 +44,47 @@ Design work without context produces generic output. Before any audit or change,
 
 **Gathering order:**
 1. Check current instructions for a **Design Context** section — if present, proceed.
-2. Check `.design-details.md` or `CLAUDE.md` at the project root — if present and sufficient, proceed.
-3. Otherwise ask the user directly for the items above. Do **not** infer from the codebase — code tells you what was built, not who it's for.
+2. Check `.design-details.md` (see Init Flow below) or `CLAUDE.md` at the project root — if present and sufficient, proceed.
+3. Otherwise ask the user directly for the items above. Do **not** infer audience, use cases, or tone from the codebase — code tells you what was built, not who it's for.
+4. **After the user answers, offer to save the answers to `.design-details.md`** so this interview never happens twice on the same project. If they accept, write the file using the Init Flow template.
 
 **If context is missing, stop and ask — do not run the audit.** A review without context produces generic findings that waste time and miss what actually matters. One focused question upfront beats a skewed audit.
+
+Exception: in a non-interactive run (CI, background session — nobody can answer), don't block. State your assumptions explicitly in the scope preamble and proceed.
+
+---
+
+## Init Flow — `/design-details init`
+
+When invoked with the `init` argument, do not audit anything. The job is to create (or update) `.design-details.md` at the project root — the durable home for design context, so the interview happens once per project instead of once per session.
+
+1. **Check for an existing `.design-details.md`.** If present, show its contents and ask what to update — don't restart the interview from scratch.
+2. **Detect before asking.** Scan the codebase for everything detectable and pre-fill it: platform (per the animation skill's detection table), design tokens and where they live, existing component conventions, analytics tool and event naming pattern. Never ask the user something the repo already answers.
+3. **Ask only the human questions**, in one batched `AskUserQuestion` round: target audience, use cases (jobs to be done), brand personality / tone. Include your detected values in the summary so the user can correct them.
+4. **Write the file** using the template below, then show what was saved.
+
+### `.design-details.md` template
+
+```markdown
+# Design Context
+
+<!-- Read by the design-details skill suite before any audit or design work.
+     Edit freely. Regenerate or update with /design-details init. -->
+
+- **Product**: [one sentence — what it is and what it does]
+- **Target audience**: [who uses it, in what context]
+- **Use cases**: [the jobs users are trying to get done]
+- **Brand personality / tone**: [how the interface should feel]
+- **Platforms**: [web | iOS | Android | React Native | mixed — and which is primary]
+- **Design system**: [where tokens live, key conventions, component library]
+- **Analytics**: [tool in use + event naming convention, or "none"]
+
+## Notes
+[anything else the skills should honor: locked decisions, non-goals,
+accessibility requirements beyond the baseline, viewport priorities]
+```
+
+Keep it under a page — this file is loaded before every audit, so it should stay cheap to read. Facts that live in the codebase (token values, component lists) belong in the codebase; this file records what the code can't say.
 
 ---
 

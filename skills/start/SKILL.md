@@ -3,7 +3,7 @@ name: start
 description: |
   Session-start skill. Establishes the working rules, gathers the minimum project context, and points the agent at the right craft skills before any code is written.
   Invoke at the very beginning of a coding session — before scaffolding, before fixes, before features.
-version: 0.1.0
+version: 0.2.0
 user-invocable: true
 argument-hint: "[short description of what you want to build or fix]"
 ---
@@ -136,10 +136,12 @@ Skills produce generic output without context. Before any work, confirm:
 - **What's already there** — existing design system, tokens, components, patterns to match
 
 **Gathering order:**
-1. Check `CLAUDE.md` at the repo root (and any nested `CLAUDE.md` in the target directory).
-2. Check for `DESIGN.md`, `STYLE.md`, `docs.md` in the directory you'll touch.
-3. Read the immediate caller and any obvious shared utilities (per Rule 7).
-4. If anything from the five questions above is still unknown, **ask before coding**. One focused round of questions upfront beats five rounds mid-implementation.
+1. Check `.design-details.md` at the project root — the durable design context file (audience, use cases, tone, platforms, design system). If present, most of the "Who" and "Where" questions are already answered.
+2. Check `CLAUDE.md` at the repo root (and any nested `CLAUDE.md` in the target directory).
+3. Check for `DESIGN.md`, `STYLE.md`, `docs.md` in the directory you'll touch.
+4. Read the immediate caller and any obvious shared utilities (per Rule 7).
+5. If anything from the five questions above is still unknown, **ask before coding**. One focused round of questions upfront beats five rounds mid-implementation.
+6. If the user answered design-context questions (audience, use cases, tone), **offer to save them to `.design-details.md`** — the template and interview live in `../design-details/SKILL.md` (Init Flow). Once saved, no future session has to re-ask.
 
 Stop here if context is missing. Don't compensate with assumptions.
 

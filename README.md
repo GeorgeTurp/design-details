@@ -15,7 +15,7 @@ Two top-level entry points (`/start` and `/design-details`) plus seven focused c
 ### Entry points
 
 - **start** — Hit `/start` at the beginning of any coding session. Establishes the working rules, gathers the minimum project context, and routes you to the right craft skills before any code is written.
-- **design-details** — The parent router. Hit `/design-details` on a finished surface for a full audit: scope preamble, every relevant craft skill run in order, lettered findings, and a row-by-row walkthrough at the end.
+- **design-details** — The parent router. Hit `/design-details` on a finished surface for a full audit: scope preamble, every relevant craft skill run in order, lettered findings, and a row-by-row walkthrough at the end. Run `/design-details init` once per project to write `.design-details.md` — the durable design-context file (audience, use cases, tone, platforms) that every skill reads, so the context interview happens once instead of every session.
 
 ### Craft skills (invokable individually)
 
@@ -101,7 +101,7 @@ There are two ways to use it.
 
 ## Versioning
 
-The suite version lives in [`package.json`](./package.json) — currently **0.2.2**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
+The suite version lives in [`package.json`](./package.json) — currently **0.3.0**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 Each individual skill also carries its own `version:` field in its `SKILL.md` frontmatter. Those bump independently — a change to `design-details-copy` only bumps that skill's version (and the suite version), not every skill.
 

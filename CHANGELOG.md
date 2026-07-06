@@ -4,6 +4,13 @@ All notable changes to this skill suite are documented here. The format is based
 
 The suite version (shown in `package.json`) bumps whenever any skill in the suite changes. Each individual `SKILL.md` also carries its own `version:` field that bumps independently when that skill changes.
 
+## [0.3.0] — 2026-07-06
+
+### Added
+- **`/design-details init`** (`design-details` v0.2.1 → v0.3.0) — new init flow that writes `.design-details.md` at the project root: the durable home for design context (audience, use cases, tone, platforms, design system, analytics). Detects everything the codebase can answer (platform, tokens, analytics tool) and interviews the user only for the human questions, in one batched round. The Context Gathering Protocol now offers to save interview answers to this file so no project gets asked twice, and gains a non-interactive escape hatch: in CI/background runs, state assumptions in the scope preamble instead of blocking.
+- **`start`** (v0.1.0 → v0.2.0) — Step 2 now checks `.design-details.md` first in the gathering order and offers to persist design-context answers there after asking.
+- **Eval corpus for the whole suite** — the evals previously covered only animation. Added `evals/routing/` (scope preamble on full audits, sub-skill invocations must not cascade into full audits, init writes the context file) plus one eval per craft skill: `layout/concentric-radius`, `copy/error-messages`, `typography/tabular-figures`, `color/dark-mode`, `accessibility/focus-visible`, `analytics/event-naming`. `evals/README.md` restructured to match.
+
 ## [0.2.2] — 2026-07-06
 
 ### Fixed

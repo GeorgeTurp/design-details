@@ -1,6 +1,6 @@
 {
   "name": "design-details",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Claude Code skill suite for shipping considered UI — working rules at session start, focused craft skills for layout, motion, copy, typography, color, accessibility, and analytics, plus a full-audit mode.",
   "repository": {
     "type": "git",
