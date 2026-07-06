@@ -317,7 +317,20 @@ const observer = new IntersectionObserver(
 
 ## Reduce motion
 
+Reduce motion **targeted**, per animation — remove movement, keep the feedback:
+
 ```css
+@media (prefers-reduced-motion: reduce) {
+  .enter { animation: none; opacity: 1; transform: none; }
+  .modal-content { transition-duration: 0ms; }
+  /* Keep opacity/color changes — just remove movement */
+}
+```
+
+**Anti-pattern** — the blanket kill-switch. It nukes opacity fades and state feedback along with the motion, and hides bugs (elements stuck at their pre-animation state). Use it only as a last-resort safety net on a codebase you can't audit:
+
+```css
+/* AVOID unless you cannot enumerate the animations */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -325,13 +338,6 @@ const observer = new IntersectionObserver(
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* Better: targeted reduction */
-@media (prefers-reduced-motion: reduce) {
-  .enter { animation: none; opacity: 1; transform: none; }
-  .modal-content { transition-duration: 0ms; }
-  /* Keep opacity/color changes — just remove movement */
 }
 ```
 

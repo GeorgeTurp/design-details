@@ -16,20 +16,32 @@ const SKILLS = [
 ];
 
 const targetDir = path.join(os.homedir(), ".claude", "skills");
+const skillsDir = path.join(__dirname, "..", "skills");
 
 let removed = [];
 
 for (const skill of SKILLS) {
   const dest = path.join(targetDir, skill);
 
-  if (fs.existsSync(dest)) {
-    const stat = fs.lstatSync(dest);
-    if (stat.isSymbolicLink()) {
+  let stat;
+  try {
+    stat = fs.lstatSync(dest); // lstat: existsSync follows (and misses broken) symlinks
+  } catch {
+    continue;
+  }
+
+  if (stat.isSymbolicLink()) {
+    // Only remove links that point into this package — a user's own skill
+    // could share a name (especially "start").
+    const target = fs.readlinkSync(dest);
+    if (target.startsWith(skillsDir + path.sep) || target === path.join(skillsDir, skill)) {
       fs.unlinkSync(dest);
       removed.push(skill);
     } else {
-      console.log(`  ⚠  ${skill} is not a symlink — skipping (remove manually if needed)`);
+      console.log(`  ⚠  ${skill} links elsewhere (${target}) — leaving it alone`);
     }
+  } else {
+    console.log(`  ⚠  ${skill} is not a symlink — skipping (remove manually if needed)`);
   }
 }
 

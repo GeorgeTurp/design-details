@@ -4,6 +4,17 @@ All notable changes to this skill suite are documented here. The format is based
 
 The suite version (shown in `package.json`) bumps whenever any skill in the suite changes. Each individual `SKILL.md` also carries its own `version:` field that bumps independently when that skill changes.
 
+## [0.2.2] — 2026-07-06
+
+### Fixed
+- **`scripts/install.js`** — broken symlinks in `~/.claude/skills/` no longer crash the install (`existsSync` follows symlinks, so a dangling link reported "missing" and the subsequent `symlinkSync` threw `EEXIST`). Stale symlinks pointing at an old install location are now replaced instead of backed up, and a leftover `.bak` from a previous backup no longer makes `renameSync` throw.
+- **`scripts/uninstall.js`** — only removes symlinks that actually point into this package. Previously any symlink with a matching name was deleted, including a user's own unrelated skill (the generic name `start` made this a real collision risk).
+- **`design-details`** (v0.2.0 → v0.2.1) — the Full Audit Contract now states explicitly that when the parent is loaded as MANDATORY PREPARATION by a sub-skill, only the shared protocols apply; it must not cascade into a full audit of every concern.
+- **`design-details-animation`** (v0.2.0 → v0.2.1):
+  - `platforms/react-native.md`: added the missing `runOnJS` import in the press pattern and noted `useAnimatedReaction` for the swipe example; replaced deprecated `Layout` with `LinearTransition`; added a toggle-with-stretch pattern so the cross-platform toggle eval has an RN reference implementation.
+  - `platforms/swiftui.md`: `AliveToggle` now actually stretches the thumb (the previous `.scaleEffect(x: 1.0, y: 1.0)` was a no-op with a misleading comment); `PressableCard` now cancels on drag-out instead of firing its action after a drag-away, per press-feedback rule 5.
+  - `platforms/web.md`: the reduce-motion section now leads with the targeted per-animation reduction and explicitly labels the blanket `* { animation-duration: 0.01ms }` kill-switch as an anti-pattern (the suite's own eval marks it as a fail, but the file presented it first).
+
 ## [0.2.1] — 2026-05-25
 
 ### Added

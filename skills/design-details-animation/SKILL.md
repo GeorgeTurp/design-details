@@ -4,7 +4,7 @@ description: |
   Make UI feel alive: press feedback, haptics, gestures, emotional motion.
   Triggers on "add micro-interactions", "make it feel responsive", "add haptics",
   "choreograph gestures", "make it feel native", or when building interactive components.
-version: 0.2.0
+version: 0.2.1
 user-invocable: true
 argument-hint: "[target]"
 ---

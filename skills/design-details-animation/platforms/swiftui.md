@@ -62,9 +62,13 @@ struct PressableCard<Content: View>: View {
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { _ in isPressed = true }
-                    .onEnded { _ in
+                    .onEnded { value in
                         isPressed = false
-                        action()
+                        // Cancel on drag-out: only fire if the touch stayed put
+                        let t = value.translation
+                        if abs(t.width) < 10 && abs(t.height) < 10 {
+                            action()
+                        }
                     }
             )
             .sensoryFeedback(.impact(flexibility: .solid, intensity: 0.5), trigger: isPressed)
@@ -271,21 +275,27 @@ Image(item.image)
 ```swift
 struct AliveToggle: View {
     @Binding var isOn: Bool
+    @State private var isStretching = false
 
     var body: some View {
         Capsule()
-            .fill(isOn ? Color.accentColor : Color.gray.opacity(0.3))
+            .fill(isOn ? Color.accentColor : Color.gray.opacity(0.3)) // color leads the thumb
             .frame(width: 51, height: 31)
             .overlay(alignment: isOn ? .trailing : .leading) {
-                Circle()
+                Capsule()
                     .fill(.white)
-                    .frame(width: 27, height: 27)
+                    // Widening along the travel axis mid-slide = the elastic stretch (~1.15x)
+                    .frame(width: isStretching ? 31 : 27, height: 27)
                     .padding(2)
-                    .scaleEffect(x: 1.0, y: 1.0) // Stretch happens via matchedGeometry
             }
             .animation(.spring(duration: 0.25, bounce: 0.2), value: isOn)
+            .animation(.spring(duration: 0.12, bounce: 0), value: isStretching)
             .onTapGesture {
                 isOn.toggle()
+                isStretching = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    isStretching = false
+                }
             }
             .sensoryFeedback(.impact(weight: .medium), trigger: isOn)
     }

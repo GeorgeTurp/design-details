@@ -21,6 +21,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  runOnJS,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
@@ -67,6 +68,7 @@ function PressableButton({ onPress, children, style }) {
 ## Swipe-to-action pattern
 
 ```tsx
+// Also needs: useAnimatedReaction from 'react-native-reanimated'
 function SwipeableRow({ children, onDelete, onArchive }) {
   const translateX = useSharedValue(0);
   const threshold = SCREEN_WIDTH * 0.35;
@@ -148,6 +150,41 @@ function DraggableItem({ children }) {
 }
 ```
 
+## Toggle with stretch
+
+Mirrors the SwiftUI toggle: elastic thumb stretch mid-slide, track color leading the thumb, medium haptic at commit (values from `references/press-feedback.md`).
+
+```tsx
+// Also needs: useDerivedValue, interpolate, interpolateColor from 'react-native-reanimated'
+function AliveToggle({ value, onValueChange }) {
+  const progress = useDerivedValue(() =>
+    withSpring(value ? 1 : 0, { damping: 14, stiffness: 260 })
+  );
+
+  const thumbStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: interpolate(progress.value, [0, 1], [2, 22]) },
+      // Stretch along the travel axis mid-slide, settle at 1
+      { scaleX: interpolate(progress.value, [0, 0.5, 1], [1, 1.15, 1]) },
+    ],
+  }));
+
+  const trackStyle = useAnimatedStyle(() => ({
+    // Color leads the thumb: fully transitioned by ~70% of travel
+    backgroundColor: interpolateColor(
+      Math.min(progress.value / 0.7, 1),
+      [0, 1],
+      [TRACK_MUTED, TRACK_ACCENT]
+    ),
+  }));
+
+  const onToggle = () => {
+    onValueChange(!value);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // commit point
+  };
+}
+```
+
 ## Shared element transitions
 
 For navigation transitions that connect elements across screens:
@@ -187,7 +224,7 @@ SharedTransition.custom((values) => {
 ## Entering / exiting animations
 
 ```tsx
-import { FadeInUp, FadeOut, Layout } from 'react-native-reanimated';
+import { FadeInUp, FadeOut, LinearTransition } from 'react-native-reanimated';
 
 // Staggered list items
 {items.map((item, i) => (
@@ -195,7 +232,7 @@ import { FadeInUp, FadeOut, Layout } from 'react-native-reanimated';
     key={item.id}
     entering={FadeInUp.delay(i * 30).springify().damping(18)}
     exiting={FadeOut.duration(100)}
-    layout={Layout.springify().damping(15)}
+    layout={LinearTransition.springify().damping(15)}
   >
     {/* content */}
   </Animated.View>
@@ -205,7 +242,7 @@ import { FadeInUp, FadeOut, Layout } from 'react-native-reanimated';
 ### Enter/exit rules (React Native)
 - **Entering**: Use `FadeInUp` (8px slide + fade) with spring. Stagger 30ms.
 - **Exiting**: Use `FadeOut` only (no slide). 100ms. No stagger.
-- **Layout**: Always add `Layout` animation when items can reorder — prevents jumps.
+- **Layout**: Always add a `layout` animation (`LinearTransition`) when items can reorder — prevents jumps.
 - **Max stagger**: Cap at 300ms total. For long lists, only stagger visible items.
 
 ## Reduce motion support

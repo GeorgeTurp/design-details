@@ -3,7 +3,7 @@ name: design-details
 description: |
   Design router for UI quality work. Routes to focused sub-skills for animation, layout, copy, typography, color, accessibility, and analytics instrumentation.
   Triggers on "review this UI", "polish this", "audit this screen", or when the user names a specific design concern that maps to a sub-skill.
-version: 0.2.0
+version: 0.2.1
 user-invocable: true
 argument-hint: "[design-details-animation|design-details-layout|design-details-copy|design-details-typography|design-details-color|design-details-accessibility|design-details-analytics]"
 ---
@@ -72,6 +72,8 @@ If the user names one concern, invoke that sub-skill. If they describe something
 ## Full Audit Contract
 
 When invoked as `design-details` with no specific sub-skill, the expectation is a **complete audit**, not a highlight reel. Partial coverage is the failure mode to avoid.
+
+**Exception — loaded as preparation:** when a sub-skill's MANDATORY PREPARATION block loads this file, apply the protocols above (Design System, Context Gathering) and the output format below, then return to the sub-skill. Do **not** start a full audit — the user asked for one concern, not all of them.
 
 ### 1. Run every sub-skill that applies to the target
 

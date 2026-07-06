@@ -101,7 +101,7 @@ There are two ways to use it.
 
 ## Versioning
 
-The suite version lives in [`package.json`](./package.json) — currently **0.2.1**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
+The suite version lives in [`package.json`](./package.json) — currently **0.2.2**. Every change to any skill bumps the suite version. The full release history with what changed in each version lives in [`CHANGELOG.md`](./CHANGELOG.md).
 
 Each individual skill also carries its own `version:` field in its `SKILL.md` frontmatter. Those bump independently — a change to `design-details-copy` only bumps that skill's version (and the suite version), not every skill.
 

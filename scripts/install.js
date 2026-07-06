@@ -24,6 +24,17 @@ fs.mkdirSync(targetDir, { recursive: true });
 let installed = [];
 let skipped = [];
 
+// lstat-based existence check: existsSync follows symlinks, so a broken
+// symlink reports "missing" and the later symlinkSync throws EEXIST.
+function lexists(p) {
+  try {
+    fs.lstatSync(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 for (const skill of SKILLS) {
   const src = path.join(skillsDir, skill);
   const dest = path.join(targetDir, skill);
@@ -32,14 +43,23 @@ for (const skill of SKILLS) {
     continue;
   }
 
-  if (fs.existsSync(dest)) {
+  if (lexists(dest)) {
     const stat = fs.lstatSync(dest);
     if (stat.isSymbolicLink() && fs.readlinkSync(dest) === src) {
       skipped.push(skill);
       continue;
     }
-    fs.renameSync(dest, `${dest}.bak`);
-    console.log(`  ↩  Backed up existing ${skill} → ${skill}.bak`);
+    if (stat.isSymbolicLink()) {
+      // Stale link from a previous install location — safe to replace.
+      fs.unlinkSync(dest);
+    } else {
+      const bak = `${dest}.bak`;
+      if (lexists(bak)) {
+        fs.rmSync(bak, { recursive: true, force: true });
+      }
+      fs.renameSync(dest, bak);
+      console.log(`  ↩  Backed up existing ${skill} → ${skill}.bak`);
+    }
   }
 
   fs.symlinkSync(src, dest);
